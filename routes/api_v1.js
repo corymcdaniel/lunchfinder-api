@@ -2,11 +2,10 @@
 const passport = require('passport');
 const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
-const request = require('request');
 
 module.exports = function(app) {
   app.route('/v1/healthcheck').get((req, res) => {
-      return res.status(200).send(result);
+      return res.status(200).send('All Good.');
   });
 
   let auth = '/v1/auth';
