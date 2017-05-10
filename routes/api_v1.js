@@ -11,6 +11,14 @@ module.exports = function(app) {
   let auth = '/v1/auth';
   app.route(`${auth}/register`).post(authController.register);
   app.route(`${auth}/login`).post(authController.login);
+  app.route(`${auth}/facebook`).get((req, res, next) => {
+    passport.authenticate('facebook', {scope: 'email'})(req, res, next);
+  });
+  app.route(`${auth}/facebook/callback`)
+    .get(passport.authenticate('facebook',
+    { successRedirect: '/', failureRedirect: '/login' }
+  ));
+
   // app.route(`${auth}/loggedin`).get(authController.loggedIn);
   // app.route(`${auth}/logout`).get(authController.logout)
 

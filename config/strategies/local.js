@@ -3,7 +3,7 @@
 var config = require('../config');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var User = require('../../models').users;
+const User = require('mongoose').model('User');
 
 /****************
  * likely unused initially, and will have to be updated to support JWT

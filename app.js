@@ -36,8 +36,8 @@ config.getGlobbedFiles('./models/**/*.js').forEach(function(modelPath) {
   require(path.resolve(modelPath));
 });
 
-require('./config/passport');
-//passportConfig();
+//initialize passport strategies
+require('./config/passport')();
 
 app.set('port', process.env.PORT || config.port || 3000);
 
@@ -67,6 +67,7 @@ app.use(session({
   cookie: {maxAge: 7 * 60 * 60 * 12}
 }));
 app.use(passport.initialize());
+app.use(passport.session());
 app.use(function(req, res, next) {
   res.locals.user = req.user;
   next();
@@ -80,6 +81,7 @@ require('./routes/api_v1')(app);
  */
 app.use(function (err, req, res, next) {
   //TODO: error handle
+  console.error(err);
   next();
 });
 
