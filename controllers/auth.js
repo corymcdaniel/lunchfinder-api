@@ -16,7 +16,7 @@ function publicUser(user) {
 }
 
 exports.authenticate = (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
+  passport.authenticate('facebook', (err, user) => {
     if (err) {
       return next(err);
     }

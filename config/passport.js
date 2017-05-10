@@ -12,19 +12,10 @@ module.exports = function() {
   // Deserialize sessions
   passport.deserializeUser(function(id, done) {
     User.findOne({
-      where: {
-        id: id
-      },
-      attributes: {
-        exclude: ['password', 'salt']
-      }
-    })
-      .then((user) => {
-        return done(null, user);
-      })
-      .catch((error) => {
-        return done(error);
-      });
+      _id: id
+    }, '-salt -password', function(err, user) {
+      done(err, user);
+    });
   });
 
   // Initialize strategies

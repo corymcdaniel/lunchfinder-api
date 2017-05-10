@@ -14,11 +14,22 @@ module.exports = function(app) {
   app.route(`${auth}/facebook`).get((req, res, next) => {
     passport.authenticate('facebook', {scope: 'email'})(req, res, next);
   });
-  app.route(`${auth}/facebook/callback`)
-    .get(passport.authenticate('facebook',
-    { successRedirect: '/', failureRedirect: '/login' }
-  ));
 
+  app.route(`${auth}/facebook/callback`)
+    .get((req, res, next) => {
+      passport.authenticate('facebook', function(err, user) {
+        if (err || !user) {
+          return res.redirect('http://localhost:3000/error');
+        }
+        req.login(user, function(err) {
+          if (err) {
+            return res.redirect('http://localhost:3000/error');
+          }
+
+          return res.redirect('http://localhost:3000/about');
+        });
+      })(req, res, next);
+    });
   // app.route(`${auth}/loggedin`).get(authController.loggedIn);
   // app.route(`${auth}/logout`).get(authController.logout)
 
