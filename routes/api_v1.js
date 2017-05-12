@@ -9,7 +9,8 @@ module.exports = function(app) {
       return res.status(200).send(result);
   });
 
-  app.route('/v1/locations').get(locationController.searchNearby);
+  app.route('/v1/locations/:externalId').get(locationController.getById);
+  app.route('/v1/locations').get(locationController.get);
 
   let auth = '/v1/auth';
   app.route(`${auth}/register`).post(authController.register);

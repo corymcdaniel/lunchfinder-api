@@ -39,7 +39,7 @@ exports.getVenues = (coords, address) => {
         });
       },
       (venues, next) => {
-        let locations =_.map(venues, venue => {
+        let locations = _.map(venues, venue => {
           return {
             externalId: venue.id,
             name: venue.name,
@@ -50,7 +50,7 @@ exports.getVenues = (coords, address) => {
         next(null, locations);
       }
       //finally:
-    ], function (err, locations) {
+    ], (err, locations) => {
       if (err) return reject(err);
       resolve(locations);
     });
@@ -58,6 +58,32 @@ exports.getVenues = (coords, address) => {
   });
 };
 
-function formatAddress(venue) {
-  return `${venue.address} ${venue.city}, ${venue.state} ${venue.postalCode}`;
+exports.getVenue = externalId => {
+  return new Promise((resolve, reject) => {
+    async.waterfall([
+      next => {
+        foursquare.getVenue({venue_id: externalId}, (err, data) => {
+          if (err) return next(err);
+          next(null, _.get(data, 'response.venue', null));
+        });
+      },
+      (venue, next) => {
+        if (!venue) return next(new Error('Location not found.'));
+        let location = {
+          name: venue.name,
+          address: formatAddress(venue.location),
+          externalId: venue.id,
+          url: venue.url
+        };
+        next(null, location);
+      }
+    ], (err, location) => {
+      if (err) return reject(err);
+      resolve(location);
+    });
+  });
+};
+
+function formatAddress(location) {
+  return `${location.address} ${location.city}, ${location.state} ${location.postalCode}`;
 }
