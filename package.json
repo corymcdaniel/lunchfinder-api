@@ -23,6 +23,7 @@
     "express-flash": "^0.0.2",
     "express-session": "^1.13.0",
     "express-validator": "^2.20.3",
+    "foursquarevenues": "^3.0.1",
     "glob": "4.0.5",
     "jsonwebtoken": "^6.1.0",
     "lob": "^3.9.0",
