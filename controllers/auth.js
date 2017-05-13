@@ -15,18 +15,6 @@ function publicUser(user) {
   return user;
 }
 
-exports.authenticate = (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.status(401).send('Unauthorized');
-    }
-    next();
-  })(req, res, next);
-};
-
 exports.login = (req, res, next) => {
   let username = req.body.username;
   let password = req.body.password;
@@ -67,4 +55,24 @@ exports.register = (req, res, next) => {
     }
     return res.json(publicUser(user));
   })(req, res, next);
+};
+
+exports.loggedIn = (req, res, next) => {
+  if (req.user) {
+    return next();
+  }
+  return res.sendStatus(401);
+};
+
+exports.getUser = (req, res) => {
+  if (!req.user) {
+    return res.sendStatus(204);
+  }
+  return res.json(publicUser(req.user));
+};
+
+exports.logout = (req, res) => {
+  req.logout();
+  req.session.destroy();
+  res.sendStatus(201);
 };
