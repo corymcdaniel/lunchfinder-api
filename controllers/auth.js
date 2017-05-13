@@ -74,7 +74,5 @@ exports.getUser = (req, res) => {
 exports.logout = (req, res) => {
   req.logout();
   req.session.destroy();
-  //res.clearCookie('sid', {path: '/'});
-  //res.redirect('/');
   res.sendStatus(201);
 };
