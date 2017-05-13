@@ -63,3 +63,18 @@ exports.loggedIn = (req, res, next) => {
   }
   return res.sendStatus(401);
 };
+
+exports.getUser = (req, res) => {
+  if (!req.user) {
+    return res.sendStatus(204);
+  }
+  return res.json(publicUser(req.user));
+};
+
+exports.logout = (req, res) => {
+  req.logout();
+  req.session.destroy();
+  //res.clearCookie('sid', {path: '/'});
+  //res.redirect('/');
+  res.sendStatus(201);
+};
