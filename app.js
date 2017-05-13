@@ -45,7 +45,7 @@ let whitelist = ['http://localhost:8080', 'http://localhost:3000'];
 let corsOptions = {
   origin: function(origin, callback){
     let originIsWhitelisted = whitelist.indexOf(origin) !== -1;
-    callback(null, true);
+    callback(null, originIsWhitelisted);
   },
   credentials: true
 };
