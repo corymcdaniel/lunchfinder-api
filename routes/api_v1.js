@@ -34,10 +34,10 @@ module.exports = function(app) {
         });
       })(req, res, next);
     });
-  // app.route(`${auth}/loggedin`).get(authController.loggedIn);
+  app.route(`${auth}/loggedin`).get(authController.loggedIn);
   // app.route(`${auth}/logout`).get(authController.logout)
 
   /***** ALL AUTHENTICATED ROUTES BELOW ******/
-  app.use('/v1/', authController.authenticate);
+  app.use('/v1/', authController.loggedIn);
   app.route('/v1/users/:userId').get(userController.get);
 };
