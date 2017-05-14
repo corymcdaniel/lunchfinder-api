@@ -11,21 +11,20 @@ module.exports = () => {
       clientSecret: config.facebook.secret, //process.env.facebook_app_secret,
       callbackURL: config.facebook.callback,
       profileFields:['id', 'displayName', 'emails']
-    }, function(accessToken, refreshToken, profile, done) {
+    }, (accessToken, refreshToken, profile, done) => {
       let user = new User({
         email: profile.emails[0].value,
         name: profile.displayName
       });
 
       //save new users:
-      User.findOne({email: user.email}, function(err, foundUser) {
+      User.findOne({email: user.email}, (err, foundUser) => {
         if(!foundUser) {
-          user.save(function(err, user) {
+          user.save((err, user) => {
             if(err) return done(err);
             done(null, user);
           });
         } else {
-          console.log(foundUser);
           done(null, foundUser);
         }
       });

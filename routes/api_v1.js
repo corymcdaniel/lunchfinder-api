@@ -3,6 +3,7 @@ const passport = require('passport');
 const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
 const locationController = require('../controllers/location');
+const reviewController = require('../controllers/review');
 
 module.exports = function(app) {
   app.route('/v1/healthcheck').get((req, res) => {
@@ -39,5 +40,7 @@ module.exports = function(app) {
   /***** ALL AUTHENTICATED ROUTES BELOW ******/
   app.use('/v1/', authController.loggedIn);
   app.route(`${auth}/logout`).get(authController.logout);
+  app.route('/v1/reviews').post(reviewController.create);
+
   app.route('/v1/users/:userId').get(userController.get);
 };
