@@ -41,6 +41,12 @@ exports.add = (review, user) => {
         location.save((err, updatedLocation) => {
           next(err, savedReview);
         });
+      },
+      (savedReview, next) => {
+        Review.findOne(savedReview)
+          .populate('user').then(review => {
+          next(null, review);
+        }).catch(next);
       }
       //return comment
     ], (err, savedReview) => {
