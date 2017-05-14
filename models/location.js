@@ -2,12 +2,9 @@
 const mongoose = require('mongoose');
 
 let locationSchema = new mongoose.Schema({
-  googleId: { type: String },
-  comments: [
-    {
-      rating: Number,
-      comment: String,
-    }
+  foursquareId: { type: String },
+  reviews: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Review' }
   ]
 });
 
