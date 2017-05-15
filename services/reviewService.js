@@ -63,6 +63,7 @@ exports.get = (locationId) => {
       populate: {
         path: 'user'
       }
-    })
-    .then(location => location.toObject());
+    }).then(location => {
+      return location;
+    });
 };

@@ -4,6 +4,7 @@ const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
 const locationController = require('../controllers/location');
 const reviewController = require('../controllers/review');
+const config = require('../config/config');
 
 module.exports = function(app) {
   app.route('/v1/healthcheck').get((req, res) => {
@@ -24,14 +25,14 @@ module.exports = function(app) {
     .get((req, res, next) => {
       passport.authenticate('facebook', function(err, user) {
         if (err || !user) {
-          return res.redirect('http://localhost:3000/error');
+          return res.redirect(`${config.clientUrl}/error`);
         }
         req.login(user, function(err) {
           if (err) {
-            return res.redirect('http://localhost:3000/error');
+            return res.redirect(`${config.clientUrl}/error`);
           }
 
-          return res.redirect('http://localhost:3000/about');
+          return res.redirect(`${config.clientUrl}`);
         });
       })(req, res, next);
     });

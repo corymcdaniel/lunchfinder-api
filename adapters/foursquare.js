@@ -73,7 +73,9 @@ exports.getVenue = externalId => {
           name: venue.name,
           address: formatAddress(venue.location),
           externalId: venue.id,
-          url: venue.url
+          url: venue.url,
+          menu: _.get(venue, 'menu.url', ''),
+          attributes: _.get(venue, 'attributes.groups', [])
         };
         next(null, location);
       }
@@ -85,5 +87,10 @@ exports.getVenue = externalId => {
 };
 
 function formatAddress(location) {
-  return `${location.address} ${location.city}, ${location.state} ${location.postalCode}`;
+  return `${removeUndefined(location.address)} ${removeUndefined(location.city)}, ${removeUndefined(location.state)} ${removeUndefined(location.postalCode)}`;
+}
+
+function removeUndefined(str) {
+  if (!str) return '';
+  return str;
 }
