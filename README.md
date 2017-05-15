@@ -27,3 +27,6 @@ should be set as environment variables, of course.
 Currently there are no useful tests set up, but unit tests are intended to be 
 written in the `/test` directory and integration tests to be written in 
 `/tests-integration`.
+
+#### Deployment
+Using your CI of choice, you merely need to deploy the api server.
