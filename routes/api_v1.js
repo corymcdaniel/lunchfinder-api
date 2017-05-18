@@ -17,25 +17,10 @@ module.exports = function(app) {
   let auth = '/v1/auth';
   app.route(`${auth}/register`).post(authController.register);
   app.route(`${auth}/login`).post(authController.login);
-  app.route(`${auth}/facebook`).get((req, res, next) => {
-    passport.authenticate('facebook', {scope: 'email'})(req, res, next);
-  });
+  app.route(`${auth}/facebook`).get(authController.facebook);
 
   app.route(`${auth}/facebook/callback`)
-    .get((req, res, next) => {
-      passport.authenticate('facebook', function(err, user) {
-        if (err || !user) {
-          return res.redirect(`${config.clientUrl}/error`);
-        }
-        req.login(user, function(err) {
-          if (err) {
-            return res.redirect(`${config.clientUrl}/error`);
-          }
-
-          return res.redirect(`${config.clientUrl}`);
-        });
-      })(req, res, next);
-    });
+    .get(authController.facebookCallback);
   app.route(`${auth}/current`).get(authController.getUser);
 
   /***** ALL AUTHENTICATED ROUTES BELOW ******/

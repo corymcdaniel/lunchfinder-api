@@ -76,3 +76,24 @@ exports.logout = (req, res) => {
   req.session.destroy();
   res.sendStatus(201);
 };
+
+exports.facebook = (req, res, next) => {
+  passport.authenticate('facebook', {scope: 'email'})(req, res, next);
+};
+
+exports.facebookCallback = (req, res, next) => {
+  passport.authenticate('facebook', function(err, user) {
+    if (err || !user) {
+      console.log('FB Callback Error: ', err);
+      return res.redirect(`${config.clientUrl}/error`);
+    }
+    req.login(user, function (err) {
+      if (err) {
+        console.log('FB Callback Login Error: ', err);
+        return res.redirect(`${config.clientUrl}/error`);
+      }
+
+      return res.redirect(`${config.clientUrl}`);
+    });
+  })(req, res, next);
+};
