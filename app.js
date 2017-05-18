@@ -41,7 +41,7 @@ require('./config/passport')();
 
 app.set('port', process.env.PORT || config.port || 3000);
 
-let whitelist = ['http://localhost:8080', 'http://localhost:3000'];
+let whitelist = ['http://localhost:8080', 'http://localhost:3000', config.clientUrl];
 let corsOptions = {
   origin: function(origin, callback){
     let originIsWhitelisted = whitelist.indexOf(origin) !== -1;
