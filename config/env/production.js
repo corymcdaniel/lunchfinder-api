@@ -4,7 +4,7 @@ module.exports = {
     mongo: 'mongodb://' + (process.env.MONGODB_URI || 'localhost') + '/warp-dev',
   },
   port: 8080,
-  clientUrl: 'http://localhost:3000',
+  clientUrl: 'https://lunchfinder-client.herokuapp.com',
   facebook: {
     appId: '218424208647713',
     secret: process.env.FACEBOOK_SECRET,
