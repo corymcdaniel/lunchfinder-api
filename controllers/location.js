@@ -17,8 +17,9 @@ exports.getById = (req, res, next) => {
     fsAdapter.getVenue(req.params.externalId),
     reviewService.get(req.params.externalId)
   ]).then(results => {
-    let reviews = results[1] || [];
-    let location = Object.assign({}, results[0], reviews);
+    let reviewModel = results[1].toJSON() || {reviews: []};
+    let location = results[0];
+    location.reviews = reviewModel.reviews;
     return res.json(location)
   }).catch(next);
 };
