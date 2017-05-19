@@ -17,4 +17,4 @@ exports.create = (req, res, next) => {
 
 function validateCreation(req) {
   return req.body && req.user && req.body.locationId && req.body.rating;
-}gii
+}
