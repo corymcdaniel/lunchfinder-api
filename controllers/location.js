@@ -4,7 +4,12 @@ const reviewService = require('../services/reviewService');
 const async = require('async');
 
 exports.get = (req, res, next) => {
-  fsAdapter.getVenues(req.query.coords, req.query.address).then(venues => {
+  let coords = req.query.lat ? {
+    latitude: req.query.lat,
+    longitude: req.query.lon
+  } : null;
+
+  fsAdapter.getVenues(coords, req.query.address).then(venues => {
     return res.json(venues);
   }).catch(next);
 };
@@ -17,7 +22,8 @@ exports.getById = (req, res, next) => {
     fsAdapter.getVenue(req.params.externalId),
     reviewService.get(req.params.externalId)
   ]).then(results => {
-    let reviewModel = results[1].toJSON() || {reviews: []};
+    let reviewResults = results[1] && results[1].toJSON() || null;
+    let reviewModel = reviewResults || {reviews: []};
     let location = results[0];
     location.reviews = reviewModel.reviews;
     return res.json(location)

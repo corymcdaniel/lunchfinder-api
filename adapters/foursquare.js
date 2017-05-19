@@ -26,11 +26,15 @@ exports.getVenues = (coords, address) => {
       //food search
       (categoryId, next) => {
         let params = {
-          near: address,
           categoryId: categoryId,
           radius: 1000,
           intent: 'browse'
         };
+        if (coords) {
+          params.ll = coords.latitude + ',' + coords.longitude;
+        } else {
+          params.near = address;
+        }
         foursquare.getVenues(params, function (error, data) {
           if (!error) {
             return next(null, data.response.venues);
