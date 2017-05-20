@@ -30,7 +30,7 @@ exports.getVenues = (coords, address) => {
           radius: 1000,
           intent: 'browse'
         };
-        if (coords) {
+        if (coords && coords.latitude && coords.latitude) {
           params.ll = coords.latitude + ',' + coords.longitude;
         } else {
           params.near = address;

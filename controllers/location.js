@@ -5,8 +5,8 @@ const async = require('async');
 
 exports.get = (req, res, next) => {
   let coords = req.query.lat ? {
-    latitude: req.query.lat,
-    longitude: req.query.lon
+    latitude: req.query.lat || null,
+    longitude: req.query.lon || null
   } : null;
 
   fsAdapter.getVenues(coords, req.query.address).then(venues => {
