@@ -78,6 +78,7 @@ exports.logout = (req, res) => {
 };
 
 exports.facebook = (req, res, next) => {
+  req.session.redirectTo = req.query.redirectTo;
   passport.authenticate('facebook', {scope: 'email'})(req, res, next);
 };
 
@@ -93,7 +94,7 @@ exports.facebookCallback = (req, res, next) => {
         return res.redirect(`${config.clientUrl}/error`);
       }
 
-      return res.redirect(`${config.clientUrl}`);
+      return res.redirect(`${req.session.redirectTo || config.clientUrl}`);
     });
   })(req, res, next);
 };
