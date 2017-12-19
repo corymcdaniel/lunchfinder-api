@@ -7,7 +7,7 @@ module.exports = {
   clientUrl: 'http://localhost:3000',
   facebook: {
     appId: '218424208647713',
-    secret: process.env.FACEBOOK_SECRET,
+    secret: 'd3472691bb0a0011c46ee6b5872efeda',
     callback: 'http://localhost:3300/v1/auth/facebook/callback'
   },
   foursquare: {
