@@ -1,4 +1,3 @@
-'use strict';
 const passport = require('passport');
 const User = require('mongoose').model('User');
 const userService = require('../services/userService');
@@ -15,33 +14,34 @@ function publicUser(user) {
   return user;
 }
 
-exports.login = (req, res, next) => {
+exports.login = async (req, res, next) => {
   let username = req.body.username;
   let password = req.body.password;
-  User.findOne({where:{username: username}}).then((user) => {
-    if (!user) {
-      throw new Error('Unknown user or invalid password');
-    }
-    user.comparePassword(password, (err, isMatch) => {
-      if (!isMatch) {
-        return res.status(400).send('Unknown user or invalid password');
-      }
-      let tokenOptions = {
-        expiresIn: '1d'
-      };
-      let userJSON = publicUser(user);
-      jwt.sign(userJSON, config.jwtSecret, tokenOptions, (err, token) => {
-        if (err) {
-          return next(err);
-        }
-        userService.update({id: user.id, last_login: Date.now()}, ['last_login']);
-        return res.json({username: user.username, id: user.id, roles: [], token: `JWT ${token}`});
-      });
-    });
-  })
-  .catch((err) => {
-    res.status(500).send(err);
-  });
+  let user = await User.findOne({where:{username: username}});
+  if (!user) {
+    throw new Error('Unknown user or invalid password');
+  }
+  let isMatch;
+  try {
+    isMatch = await user.comparePassword(password);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+  if (!isMatch) {
+    return res.status(400).send('Unknown user or invalid password');
+  }
+  let tokenOptions = { expiresIn: '1d' };
+  let userJSON = publicUser(user);
+  let token;
+
+  try {
+    token = await jwt.sign(userJSON, config.jwtSecret, tokenOptions);
+  } catch (err) {
+    return next(err);
+  }
+
+  userService.update({id: user.id, last_login: Date.now()}, ['last_login']);
+  return res.json({username: user.username, id: user.id, roles: [], token: `JWT ${token}`});
 };
 
 exports.register = (req, res, next) => {
