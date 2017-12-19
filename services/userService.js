@@ -1,6 +1,4 @@
-'use strict';
-
-var User = require('mongoose').model('User');
+const User = require('mongoose').model('User');
 
 exports.get = id => {
   return User.findOne({
@@ -18,19 +16,16 @@ exports.list = options => {
   });
 };
 
-exports.create = user => {
-  return User.findOne({
-        where: {username: user.username}
-      })
-      .then(user => {
-        if (user) {
-          throw new RangeError('Username is taken');
-        }
-        return;
-      })
-      .then(() => {
-        return User.create(user, {isNewRecord: true});
-      });
+exports.create = async (user) => {
+  let found = await User.findOne({
+    where: {username: user.username}
+  });
+
+  if (found) {
+    throw new RangeError('Username is taken');
+  }
+
+  return User.create(user, {isNewRecord: true});
 };
 
 exports.update = (user, fields) => {
@@ -41,12 +36,10 @@ exports.update = (user, fields) => {
     });
 };
 
-exports.delete = userId => {
-  return User.findById(userId)
-    .then(user => {
-      if (!user) {
-        throw new Error('User not found');
-      }
-      return user.destroy()
-    });
+exports.delete = async (userId) => {
+  let user = await User.findById(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+  return user.destroy()
 };

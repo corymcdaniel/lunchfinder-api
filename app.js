@@ -3,6 +3,8 @@
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
+//set mongoose to use native Promises:
+mongoose.Promise = Promise;
 const compress = require('compression');
 const session = require('express-session');
 const bodyParser = require('body-parser');
