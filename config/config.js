@@ -1,8 +1,7 @@
-'use strict';
-var _ = require('lodash');
-var glob = require('glob');
+const _ = require('lodash');
+const glob = require('glob');
 
-var env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || 'development';
 
 module.exports = _.extend(
   require('./env/all'),
@@ -14,19 +13,19 @@ module.exports = _.extend(
 /**
  * Get files by glob patterns
  */
-module.exports.getGlobbedFiles = function(globPatterns, removeRoot) {
+module.exports.getGlobbedFiles = (globPatterns, removeRoot) => {
   // For context switching
-  var _this = this;
+  let _this = this;
 
   // URL paths regex
-  var urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
+  let urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
 
   // The output array
-  var output = [];
+  let output = [];
 
   // If glob pattern is array so we use each pattern in a recursive way, otherwise we use glob
   if (_.isArray(globPatterns)) {
-    globPatterns.forEach(function(globPattern) {
+    globPatterns.forEach((globPattern) => {
       output = _.union(output, _this.getGlobbedFiles(globPattern, removeRoot));
     });
   } else if (_.isString(globPatterns)) {
@@ -35,9 +34,9 @@ module.exports.getGlobbedFiles = function(globPatterns, removeRoot) {
     } else {
       glob(globPatterns, {
         sync: true
-      }, function(err, files) {
+      }, (err, files) => {
         if (removeRoot) {
-          files = files.map(function(file) {
+          files = files.map(file => {
             return file.replace(removeRoot, '');
           });
         }
