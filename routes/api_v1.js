@@ -1,10 +1,7 @@
-'use strict';
-const passport = require('passport');
 const userController = require('../controllers/user');
 const authController = require('../controllers/auth');
 const locationController = require('../controllers/location');
 const reviewController = require('../controllers/review');
-const config = require('../config/config');
 
 module.exports = function(app) {
   app.route('/v1/healthcheck').get((req, res) => {

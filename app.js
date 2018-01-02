@@ -3,13 +3,13 @@
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
+//set mongoose to use native Promises:
+mongoose.Promise = Promise;
 const compress = require('compression');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const errorHandler = require('errorhandler');
-const dotenv = require('dotenv');
-const flash = require('express-flash');
 const passport = require('passport');
 const mongoStore = require('connect-mongo')({
   session: session
@@ -24,12 +24,10 @@ global.appRoot = path.resolve(__dirname);
 let app = express();
 
 // Bootstrap db connection
-let db = mongoose.connect(config.db.mongo, function(err) {
-  if (err) {
-    console.error('Could not connect to MongoDB!');
-    console.log(err);
-  }
-});
+mongoose.connect(config.db.mongo, {useMongoClient: true});
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.set('debug', true);
+}
 
 // Globbing model files
 config.getGlobbedFiles('./models/**/*.js').forEach(function(modelPath) {
@@ -61,7 +59,8 @@ app.use(session({
   resave: false,
   secret: 'hfieoafjeio', // TODO: get from process env
   store: new mongoStore({
-    mongooseConnection: db.connection,
+    url: config.db.mongo,
+    //mongooseConnection: db.connection,
     collection: 'sessions',
     maxAge: 7 * 60 * 60 * 12
   }),
@@ -69,7 +68,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   res.locals.user = req.user;
   next();
 });
@@ -90,7 +89,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(errorHandler());
 }
 
-app.listen(app.get('port'), function () {
+app.listen(app.get('port'), () => {
   console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
 });
 

@@ -1,18 +1,18 @@
-'use strict';
-let reviewService = require('../services/reviewService');
+const reviewService = require('../services/reviewService');
 
 exports.get = (req, res, next) => {
 
 };
 
-exports.create = (req, res, next) => {
+exports.create = async (req, res, next) => {
   // check inputs
   if (!validateCreation(req)) return res.sendStatus(400);
-  reviewService.add(req.body, req.user)
-    .then(review => {
-      res.json(review)
-    })
-    .catch(next);
+  try {
+    let review = reviewService.add(req.body, req.user);
+    return res.json(review);
+  } catch (err) {
+    next(err);
+  }
 };
 
 function validateCreation(req) {
