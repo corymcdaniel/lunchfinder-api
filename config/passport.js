@@ -1,21 +1,22 @@
-const passport = require('passport');
+const passport = require('koa-passport');
 const config = require('./config');
 const path = require('path');
 const User = require('mongoose').model('User');
 
 module.exports = function() {
-  // Serialize sessions
-  passport.serializeUser(function(user, done) {
+  passport.serializeUser((user, done) => {
     done(null, user.id);
   });
 
-  // Deserialize sessions
-  passport.deserializeUser(function(id, done) {
-    User.findOne({
-      _id: id
-    }, '-salt -password', function(err, user) {
-      done(err, user);
-    });
+  passport.deserializeUser(async (id, done) => {
+    try {
+      let user = await User.findOne({
+        _id: id
+      }, '-salt -password');
+      return done(null, user);
+    } catch (err) {
+      done(err);
+    }
   });
 
   // Initialize strategies

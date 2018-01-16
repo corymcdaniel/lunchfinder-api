@@ -1,4 +1,4 @@
-const passport = require('passport');
+const passport = require('koa-passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
 const config = require('../config');
 const User = require('mongoose').model('User');

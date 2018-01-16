@@ -1,27 +1,26 @@
-'use strict';
-
 const path = require('path');
-const express = require('express');
+const Koa = require('koa');
+const helmet = require('koa-helmet');
+const cors = require('kcors');
+const logger = require('koa-morgan');
+const bodyParser = require('koa-bodyparser');
+const static_server = require('koa-static');
+const session = require('koa-session');
+const passport = require('koa-passport');
+const config = require('./config/config');
+const MongooseStore = require('koa-session-mongoose');
 const mongoose = require('mongoose');
 //set mongoose to use native Promises:
 mongoose.Promise = Promise;
-const compress = require('compression');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const logger = require('morgan');
-const errorHandler = require('errorhandler');
-const passport = require('passport');
-const mongoStore = require('connect-mongo')({
-  session: session
+config.getGlobbedFiles('./models/**/*.js').forEach(function(modelPath) {
+  require(path.resolve(modelPath));
 });
-const expressValidator = require('express-validator');
-const multer = require('multer');
-const config = require('./config/config');
-const cors = require('cors');
 
-global.appRoot = path.resolve(__dirname);
+const api_v1 = require('./routes/api_v1');
+const port = process.env.PORT || config.port || 3000;
 
-let app = express();
+
+const app = new Koa();
 
 // Bootstrap db connection
 mongoose.connect(config.db.mongo, {useMongoClient: true});
@@ -29,68 +28,32 @@ if (process.env.NODE_ENV !== 'production') {
   mongoose.set('debug', true);
 }
 
-// Globbing model files
-config.getGlobbedFiles('./models/**/*.js').forEach(function(modelPath) {
-  require(path.resolve(modelPath));
-});
-
 //initialize passport strategies
 require('./config/passport')();
 
-app.set('port', process.env.PORT || config.port || 3000);
-
 let whitelist = ['http://localhost:8080', 'http://localhost:3000', config.clientUrl];
 let corsOptions = {
-  origin: function(origin, callback){
-    let originIsWhitelisted = whitelist.indexOf(origin) !== -1;
-    callback(null, originIsWhitelisted);
+  origin: function(ctx){
+    let originIsWhitelisted = whitelist.indexOf(ctx.headers.origin) !== -1;
+    return originIsWhitelisted ? ctx.headers.origin : false;
   },
   credentials: true
 };
 app.use(cors(corsOptions));
-
-app.use(compress());
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(expressValidator());
-app.use(session({
-  saveUninitialized: false,
-  resave: false,
-  secret: 'hfieoafjeio', // TODO: get from process env
-  store: new mongoStore({
-    url: config.db.mongo,
-    //mongooseConnection: db.connection,
-    collection: 'sessions',
-    maxAge: 7 * 60 * 60 * 12
-  }),
-  cookie: {maxAge: 7 * 60 * 60 * 12}
-}));
+app.use(helmet());
+app.use(logger('tiny'));
+app.use(bodyParser());
+app.keys = [process.env.SESSION_KEY || 'sess39852753'];
+app.use(session({ store: new MongooseStore()}, app));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  next();
-});
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
-require('./routes/api_v1')(app);
+app.use(static_server(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
-/**
- * Error Handler.
- */
-app.use(function (err, req, res, next) {
-  //TODO: error handle
-  console.error(err);
-  next();
-});
+app.use(api_v1);
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(errorHandler());
-}
-
-app.listen(app.get('port'), () => {
-  console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
+app.listen(port, () => {
+  console.log(`Koa server listening on port ${port} in ${process.env.NODE_ENV} mode`);
 });
 
 module.exports = app;

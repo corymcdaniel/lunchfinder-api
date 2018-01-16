@@ -1,30 +1,30 @@
 const fsAdapter = require('../adapters/foursquare');
 const reviewService = require('../services/reviewService');
 
-exports.get = async (req, res, next) => {
-  let coords = req.query.lat ? {
-    latitude: req.query.lat || null,
-    longitude: req.query.lon || null
+exports.get = async (ctx, next) => {
+  let coords = ctx.query.lat ? {
+    latitude: ctx.query.lat || null,
+    longitude: ctx.query.lon || null
   } : null;
 
   try {
-    let venues = await fsAdapter.getVenues(coords, req.query.address);
-    return res.json(venues);
+    let venues = await fsAdapter.getVenues(coords, ctx.query.address);
+    ctx.body = venues;
   } catch (err) {
     next(err);
   }
 };
 
-exports.getById = async (req, res, next) => {
-  if (!req.params || !req.params.externalId) {
+exports.getById = async (ctx, next) => {
+  if (!ctx.params || !ctx.params.externalId) {
     return next(new Error('Location not found'));
   }
 
   let results;
   try {
     results = await Promise.all([
-      fsAdapter.getVenue(req.params.externalId),
-      reviewService.get(req.params.externalId)
+      fsAdapter.getVenue(ctx.params.externalId),
+      reviewService.get(ctx.params.externalId)
     ]);
   } catch (err) {
     return next(err);
@@ -35,5 +35,5 @@ exports.getById = async (req, res, next) => {
   let location = results[0];
   location.reviews = reviewModel.reviews;
 
-  return res.json(location)
+  ctx.body = location;
 };
