@@ -1,20 +1,23 @@
 const reviewService = require('../services/reviewService');
 
-exports.get = (req, res, next) => {
+exports.get = (ctx, next) => {
 
 };
 
-exports.create = async (req, res, next) => {
+exports.create = async (ctx, next) => {
   // check inputs
-  if (!validateCreation(req)) return res.sendStatus(400);
+  if (!validateCreation(ctx)) {
+    ctx.status = 400;
+    return;
+  }
   try {
-    let review = reviewService.add(req.body, req.user);
-    return res.json(review);
+    let review = reviewService.add(ctx.body, ctx.req.user);
+    ctx.body = review;
   } catch (err) {
     next(err);
   }
 };
 
-function validateCreation(req) {
-  return req.body && req.user && req.body.locationId && req.body.rating;
+function validateCreation(ctx) {
+  return ctx.body && ctx.req.user && ctx.req.body.locationId && ctx.req.body.rating;
 }

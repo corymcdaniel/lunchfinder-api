@@ -1,4 +1,4 @@
-const passport = require('passport');
+const passport = require('koa-passport');
 const User = require('mongoose').model('User');
 const userService = require('../services/userService');
 const jwt = require('jsonwebtoken');
@@ -14,9 +14,9 @@ function publicUser(user) {
   return user;
 }
 
-exports.login = async (req, res, next) => {
-  let username = req.body.username;
-  let password = req.body.password;
+exports.login = async (ctx, next) => {
+  let username = ctx.body.username;
+  let password = ctx.body.password;
   let user = await User.findOne({where:{username: username}});
   if (!user) {
     throw new Error('Unknown user or invalid password');
@@ -25,10 +25,14 @@ exports.login = async (req, res, next) => {
   try {
     isMatch = await user.comparePassword(password);
   } catch (err) {
-    return res.status(500).send(err);
+    ctx.status = 500;
+    ctx.body = err;
+    return;
   }
   if (!isMatch) {
-    return res.status(400).send('Unknown user or invalid password');
+    ctx.status = 400;
+    ctx.body = 'Unknown user or invalid password';
+    return;
   }
   let tokenOptions = { expiresIn: '1d' };
   let userJSON = publicUser(user);
@@ -41,60 +45,72 @@ exports.login = async (req, res, next) => {
   }
 
   userService.update({id: user.id, last_login: Date.now()}, ['last_login']);
-  return res.json({username: user.username, id: user.id, roles: [], token: `JWT ${token}`});
+  ctx.body = {
+    username: user.username,
+    id: user.id,
+    roles: [], token: `JWT ${token}`
+  };
 };
 
-exports.register = (req, res, next) => {
-  passport.authenticate('local-register', function(err, user, info) {
+exports.register = (ctx, next) => {
+  passport.authenticate('local-register', (err, user) => {
     if (err && err.message) {
       console.error(err);
-      return res.status(400).send(err.message);
+      ctx.status = 400;
+      ctx.body = err.message;
     }
     if (err) {
-      return res.status(500).send();
+      ctx.status = 500;
+      ctx.body = err.message;
+      return;
     }
-    return res.json(publicUser(user));
-  })(req, res, next);
+    ctx.body = publicUser(user);
+  })(ctx.req, ctx.res, next);
 };
 
-exports.loggedIn = (req, res, next) => {
-  if (req.user) {
+exports.loggedIn = (ctx, next) => {
+  if (ctx.isAuthenticated()) {
     return next();
   }
-  return res.sendStatus(401);
+  ctx.status = 401;
 };
 
-exports.getUser = (req, res) => {
-  if (!req.user) {
-    return res.sendStatus(204);
+exports.getUser = (ctx) => {
+  if (!ctx.state.user) {
+    ctx.status = 204;
+    return;
   }
-  return res.json(publicUser(req.user));
+  ctx.body = publicUser(ctx.state.user);
 };
 
-exports.logout = (req, res) => {
-  req.logout();
-  req.session.destroy();
-  res.sendStatus(201);
+exports.logout = (ctx) => {
+  ctx.logout();
+  //ctx.session.destroy();
+  ctx.status = 201;
 };
 
-exports.facebook = (req, res, next) => {
-  req.session.redirectTo = req.query.redirectTo;
-  passport.authenticate('facebook', {scope: 'email'})(req, res, next);
+exports.facebook = (ctx, next) => {
+  return passport.authenticate('facebook', {scope: 'email'})(ctx, next);
 };
 
-exports.facebookCallback = (req, res, next) => {
-  passport.authenticate('facebook', function(err, user) {
+exports.facebookCallback = (ctx, next) => {
+  return passport.authenticate('facebook',
+    async (err, user) => {
     if (err || !user) {
       console.log('FB Callback Error: ', err);
-      return res.redirect(`${config.clientUrl}/error`);
+      return ctx.redirect(`${config.clientUrl}/error`);
     }
-    req.login(user, function (err) {
+    ctx.login(user, (err) => {
       if (err) {
         console.log('FB Callback Login Error: ', err);
-        return res.redirect(`${config.clientUrl}/error`);
+        return ctx.redirect(`${config.clientUrl}/error`);
       }
 
-      return res.redirect(`${req.session.redirectTo || config.clientUrl}`);
+      return ctx.redirect(`${ctx.session.redirectTo || config.clientUrl}`);
     });
-  })(req, res, next);
+  })(ctx, next);
+};
+
+exports.facebookSuccess = async (ctx, next) => {
+  return ctx.redirect(`${ctx.session.redirectTo || config.clientUrl}`);
 };

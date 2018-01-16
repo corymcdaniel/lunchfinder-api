@@ -1,5 +1,4 @@
 const config = require('../config/config');
-const async = require('async');
 const _ = require('lodash');
 
 const foodCategoryName = 'food';
@@ -45,32 +44,23 @@ async function getFoodCategory() {
   return foodCategoryId;
 }
 
-exports.getVenue = externalId => {
-  return new Promise((resolve, reject) => {
-    async.waterfall([
-      next => {
-        foursquare.getVenue({venue_id: externalId}, (err, data) => {
-          if (err) return next(err);
-          next(null, _.get(data, 'response.venue', null));
-        });
-      },
-      (venue, next) => {
-        if (!venue) return next(new Error('Location not found.'));
-        let location = {
-          name: venue.name,
-          address: formatAddress(venue.location),
-          externalId: venue.id,
-          url: venue.url,
-          menu: _.get(venue, 'menu.url', ''),
-          attributes: _.get(venue, 'attributes.groups', [])
-        };
-        next(null, location);
-      }
-    ], (err, location) => {
-      if (err) return reject(err);
-      resolve(location);
-    });
-  });
+exports.getVenue = async (externalId) => {
+  let venue;
+  try {
+    venue = await getVenue({venue_id: externalId});
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+  if (!venue) return null;
+  return {
+    name: venue.name,
+    address: formatAddress(venue.location),
+    externalId: venue.id,
+    url: venue.url,
+    menu: _.get(venue, 'menu.url', ''),
+    attributes: _.get(venue, 'attributes.groups', [])
+  };
 };
 
 function formatAddress(location) {
@@ -86,6 +76,15 @@ function removeUndefined(str) {
   util.promisify(foursquare.getVenues) etc causes a loss of this._baseURL in
   the returned object from the package, thus failing calls.  manually promisifying:
  */
+function getVenue(params) {
+  return new Promise((resolve, reject) => {
+    foursquare.getVenue(params, (err, data) => {
+      if (err) return reject(err);
+      resolve(_.get(data, 'response.venue', null));
+    })
+  });
+}
+
 function getVenues(params) {
   return new Promise((resolve, reject) => {
     foursquare.getVenues(params, (err, data) => {
