@@ -85,7 +85,6 @@ exports.getUser = (ctx) => {
 
 exports.logout = (ctx) => {
   ctx.logout();
-  //ctx.session.destroy();
   ctx.status = 201;
 };
 
@@ -111,6 +110,6 @@ exports.facebookCallback = (ctx, next) => {
   })(ctx, next);
 };
 
-exports.facebookSuccess = async (ctx, next) => {
+exports.facebookSuccess = async (ctx) => {
   return ctx.redirect(`${ctx.session.redirectTo || config.clientUrl}`);
 };
